@@ -1,20 +1,25 @@
+#include <stdint.h>
+#ifdef _WIN32
+#include <windows.h>
+#include <winnt.h>
+#else
 #include <stdio.h>
 #include <assert.h>
-#include <stdint.h>
+#endif
 
 extern uintptr_t stack_bottom;
 
 void GC_init(void)
 {
-    FILE *fp;
     static int initted = 0;
-
-    if (initted)
-        return;
-
+    if (initted) return;
     initted = 1;
 
-    fp = fopen("/proc/self/stat", "r");
+#ifdef _WIN32
+    NT_TIB *tib = (NT_TIB *)NtCurrentTeb();
+    stack_bottom = (uintptr_t)tib->StackBase;
+#else
+    FILE *fp = fopen("/proc/self/stat", "r");
     assert(fp != NULL);
 
     fscanf(fp,
@@ -23,6 +28,6 @@ void GC_init(void)
            "%*ld %*ld %*ld %*ld %*llu %*lu %*ld "
            "%*lu %*lu %*lu %lu",
            &stack_bottom);
-
     fclose(fp);
+#endif
 }

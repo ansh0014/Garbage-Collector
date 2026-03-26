@@ -1,6 +1,6 @@
 #include <stdint.h>
 #include "common.h"
-#include "allocator.h"
+#include "allocator/allocator.h"
 
 uintptr_t stack_bottom;
 
@@ -70,9 +70,15 @@ void GC_collect(void)
     if (!usedp)
         return;
 
-    asm volatile ("movq %%rbp, %0" : "=r" (stack_top));
 
-    scan_region((uintptr_t *)stack_top, (uintptr_t *)stack_bottom);
+    volatile uintptr_t stack_anchor = 0;
+    stack_top = (uintptr_t)&stack_anchor;
+
+    if (stack_top < stack_bottom)
+        scan_region((uintptr_t *)stack_top, (uintptr_t *)stack_bottom);
+    else
+        scan_region((uintptr_t *)stack_bottom, (uintptr_t *)stack_top);
+
     scan_heap();
 
     for (prevp = usedp, p = UNTAG(usedp->next); ; prevp = p, p = UNTAG(p->next)) {

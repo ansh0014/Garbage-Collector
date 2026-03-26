@@ -1,11 +1,15 @@
+#ifdef _WIN32
+#include <windows.h>
+#else
 #include <unistd.h>
+#endif
 #include <stdio.h>
-#include "allocator.h"
+#include "allocator/allocator.h"
 
 #define MIN_ALLOC_SIZE 4096
 
 static header_t base;
-header_t *freep = &base;
+header_t *freep = NULL;
 header_t *usedp = NULL;
 
 void add_to_free_list(header_t *bp)
@@ -37,13 +41,17 @@ static header_t *morecore(size_t num_units)
 {
     void *vp;
     header_t *up;
+    size_t bytes = num_units * sizeof(header_t);
 
-    if (num_units < MIN_ALLOC_SIZE)
-        num_units = MIN_ALLOC_SIZE / sizeof(header_t);
-
-    vp = sbrk(num_units * sizeof(header_t));
-    if (vp == (void *) -1)
+#ifdef _WIN32
+    vp = VirtualAlloc(NULL, bytes, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+    if (vp == NULL)
         return NULL;
+#else
+    vp = sbrk(bytes);
+    if (vp == (void *)-1)
+        return NULL;
+#endif
 
     up = (header_t *) vp;
     up->size = num_units;

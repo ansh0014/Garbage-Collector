@@ -6,5 +6,8 @@ typedef struct header {
     unsigned int size;
     struct header *next;
 } header_t;
-#define UNTAG(p) (((uintptr_t)(p)) & 0xfffffffc)
-#endif 
+#define MARK_BIT ((uintptr_t)1)
+#define MARK(p) ((header_t *)((uintptr_t)(p) | MARK_BIT))
+#define IS_MARKED(p) ((((uintptr_t)(p)) & MARK_BIT) != 0)
+#define UNTAG(p) ((header_t *)((uintptr_t)(p) & ~MARK_BIT))
+#endif
