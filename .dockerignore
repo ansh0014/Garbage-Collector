@@ -1,0 +1,7 @@
+.git
+build
+.vscode
+*.obj
+*.pdb
+*.ilk
+*.exe

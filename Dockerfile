@@ -1,0 +1,13 @@
+FROM ubuntu:22.04
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    cmake \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+COPY . .
+
+RUN cmake -S . -B build && cmake --build build -j
+
+CMD ["./build/garbage_collector"]
