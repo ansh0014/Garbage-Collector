@@ -54,11 +54,27 @@ If you see a FAIL line, it indicates a GC logic issue that still needs fixing.
 
 ## Docker
 
-Build image:
+Build and run with Docker Compose:
+
+	docker compose up --build
+
+Run in background:
+
+	docker compose up --build -d
+
+Stop and remove containers:
+
+	docker compose down
+
+Open an interactive debug shell (debug profile):
+
+	docker compose --profile debug run --rm gc-debug
+
+Build image directly (without Compose):
 
 	docker build -t garbage-collector .
 
-Run container:
+Run image directly:
 
 	docker run --rm garbage-collector
 

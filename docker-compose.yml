@@ -1,0 +1,20 @@
+services:
+  garbage-collector:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: garbage-collector:latest
+    container_name: garbage-collector
+    restart: "no"
+
+  gc-debug:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: garbage-collector:latest
+    container_name: garbage-collector-debug
+    profiles: ["debug"]
+    entrypoint: ["/bin/bash"]
+    stdin_open: true
+    tty: true
+    restart: "no"
