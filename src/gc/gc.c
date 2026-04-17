@@ -64,12 +64,12 @@ static void scan_heap(void)
 
 void GC_collect(void)
 {
-    header_t *p, *prevp, *tp;
     uintptr_t stack_top;
+    header_t *orig, *curr, *next;
+    header_t *kept_tail = NULL;
 
     if (!usedp)
         return;
-
 
     volatile uintptr_t stack_anchor = 0;
     stack_top = (uintptr_t)&stack_anchor;
@@ -81,26 +81,31 @@ void GC_collect(void)
 
     scan_heap();
 
-    for (prevp = usedp, p = UNTAG(usedp->next); ; prevp = p, p = UNTAG(p->next)) {
+    orig = usedp;
+    curr = orig;
 
-        if (!IS_MARKED(p->next)) {
-            tp = p;
-            p = UNTAG(p->next);
+    do {
+        int marked;
+        next = UNTAG(curr->next);
+        marked = IS_MARKED(curr->next);
 
-            add_to_free_list(tp);
+        curr->next = UNTAG(curr->next);
 
-            if (usedp == tp) {
-                usedp = NULL;
-                break;
+        if (marked) {
+            if (!kept_tail) {
+                curr->next = curr;
+                kept_tail = curr;
+            } else {
+                curr->next = kept_tail->next;
+                kept_tail->next = curr;
+                kept_tail = curr;
             }
-
-            prevp->next = p;
-            continue;
+        } else {
+            add_to_free_list(curr);
         }
 
-        p->next = UNTAG(p->next);
+        curr = next;
+    } while (curr != orig);
 
-        if (p == usedp)
-            break;
-    }
+    usedp = kept_tail;
 }

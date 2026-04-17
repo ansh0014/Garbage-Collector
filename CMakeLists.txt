@@ -7,6 +7,10 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 add_executable(garbage_collector
     src/main.c
     src/allocator/allocator.c
+    src/allocator/arena.c
+    src/allocator/barrier.c
+    src/allocator/compact.c
+    src/allocator/mark_queue.c
     src/gc/gc.c
     src/runtime/init.c
 )
